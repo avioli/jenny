@@ -279,6 +279,18 @@ begin () {
     # Grab file details
     parse_details "$f"
 
+    # If there's no date, then it's a draft
+    if ! [[ $Filename =~ $PUBLISH_PATTERN ]]; then
+        echo "• Draft: $FullFileName file..";
+        continue
+    fi
+
+    # If the date is in the future, then it's scheduled
+    if (( $PostDateInt > $(date +"%Y%m%d") )); then
+        echo "• Scheduled: $FullFileName file..";
+        continue
+    fi
+
     # Process source files if not working on tag index
     if [ -z "$_TAGNAME" ]; then
 
@@ -290,18 +302,6 @@ begin () {
       done
 
       isCurrentNew=true
-
-      # If there's no date, then it's a draft
-      if ! [[ $Filename =~ $PUBLISH_PATTERN ]]; then
-        echo "• Draft: $FullFileName file..";
-        continue
-      fi
-
-      # If the date is in the future, then it's scheduled
-      if (( $PostDateInt > $(date +"%Y%m%d") )); then
-        echo "• Scheduled: $FullFileName file..";
-        continue
-      fi
 
       # Check if changed since last compile
       LAST_MODIFIED_DATE=$(date -r "$f" +%s)
