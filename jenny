@@ -160,7 +160,13 @@ render () {
   $SED -i 's/<h1.*>.*<\/h1>//' $RENDER_TEMP_FILE
 
   # Push variables to template file
-  POST_TITLE=$title POST_URL="/post/$Slug.html" POST_DATE=$PostDate POST_CONTENTS=$(cat $RENDER_TEMP_FILE) TAGS=$_TAGS $LAYOUT_DIR/post.sh > $permalink
+  POST_TITLE=$title \
+    POST_URL="/post/$Slug.html" \
+    POST_DATE=$PostDate \
+    POST_CONTENTS=$(cat $RENDER_TEMP_FILE) \
+    TAGS=$_TAGS \
+    BLOG_TITLE=$BLOG_TITLE \
+    $LAYOUT_DIR/post.sh > $permalink
 }
 
 # Inserts each article into an index or pagination page
@@ -186,7 +192,6 @@ index_insert () {
   # Or when we don't have any more
   if (( $isNewPage == 0 )) || (( $PostCount == $TotalPostCount )); then
     echo "CREATED PAGE $page"
-    echo ""
 
     # Add the older page nav
     [[ $(( page - 1 )) > 0 ]] && PAGE_OLD="$root/page/$(( page - 1 )).html" || PAGE_OLD=""
@@ -212,13 +217,16 @@ index_insert () {
           IndexList="${append[idx]}✂︎$IndexList"
         done
       fi
+
+      echo "Generating index.html"
+
       LIST="$IndexList" \
         PAGE_OLD=$PAGE_OLD \
         TAGNAME=$_TAGNAME \
+        BLOG_TITLE=$BLOG_TITLE \
         $LAYOUT_DIR/index.sh > "$_DIST/index.html"
 
       echo "Generating feed.xml"
-      echo ""
 
       LIST="$IndexList" \
         PAGE_OLD=$PAGE_OLD \
@@ -231,6 +239,9 @@ index_insert () {
       IndexList=$(join_by '✂︎' "${IndexList[@]}")
       LastList=$IndexList
       mkdir -p $_DIST/page
+
+      echo "Generating page ${page}.html"
+
       LIST="$IndexList" \
         PAGE_NUM=$page \
         PAGE_OLD=$PAGE_OLD \
